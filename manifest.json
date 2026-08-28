@@ -1,0 +1,26 @@
+{
+  "name": "Checklist Bitácora de Obra Pública Municipal",
+  "short_name": "Bitácora Checklist",
+  "description": "Checklist operativo de apertura, operación diaria y cierre de bitácora de obra pública. Control preventivo ante fiscalización.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B1220",
+  "theme_color": "#0B1220",
+  "orientation": "portrait-primary",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "education"]
+}

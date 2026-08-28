@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B1220" />
+  <meta name="description" content="Checklist operativo de bitácora de obra pública municipal. Control preventivo ante fiscalización." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Bitácora Checklist" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <title>Checklist Bitácora de Obra</title>
+  <style>
+    :root {
+      --navy: #0B1220;
+      --surface: #141C2B;
+      --gold: #C9A227;
+      --gold-dim: #A68B1F;
+      --terra: #C45C26;
+      --text: #F4F1EA;
+      --muted: #A8B0C0;
+      --border: #2A3548;
+      --ok: #3D7A5A;
+      --card: #1A2332;
+      --danger: #C45C26;
+      --warn: #D97706;
+      --crit: #B91C1C;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body { display: flex; flex-direction: column; min-height: 100dvh; }
+
+    .app-header {
+      background: var(--surface);
+      border-bottom: 2px solid var(--gold);
+      padding: 0.75rem 1rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .app-header h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+    }
+    .app-header p {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .progress-ring {
+      font-size: 0.75rem;
+      color: var(--gold);
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 58px;
+      z-index: 40;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      flex: 1 0 auto;
+      min-width: 4.8rem;
+      padding: 0.65rem 0.45rem;
+      text-align: center;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    .tab .badge {
+      display: inline-block;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 0.6rem;
+      padding: 0.08rem 0.3rem;
+      border-radius: 999px;
+      margin-left: 0.2rem;
+    }
+    .tab.active .badge {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 5.5rem;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ===== HERO / RESUMEN ===== */
+    .hero {
+      text-align: center;
+      padding: 1.25rem 1rem 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 1.1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--level-color, var(--gold));
+    }
+    .hero-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .hero-pct {
+      font-size: 3.6rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--level-color, var(--gold));
+      letter-spacing: -0.03em;
+    }
+    .hero-pct span {
+      font-size: 1.4rem;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+    .hero-level {
+      display: inline-block;
+      margin-top: 0.65rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: color-mix(in srgb, var(--level-color, var(--gold)) 18%, transparent);
+      color: var(--level-color, var(--gold));
+      border: 1px solid color-mix(in srgb, var(--level-color, var(--gold)) 45%, transparent);
+    }
+    .hero-risk {
+      margin-top: 0.55rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .hero-risk strong {
+      color: var(--level-color, var(--gold));
+    }
+
+    /* SVG ring */
+    .ring-wrap {
+      width: 140px;
+      height: 140px;
+      margin: 0.4rem auto 0.6rem;
+      position: relative;
+    }
+    .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+    .ring-fg {
+      fill: none;
+      stroke: var(--level-color, var(--gold));
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 339.3;
+      stroke-dashoffset: 339.3;
+      transition: stroke-dashoffset 0.6s ease, stroke 0.3s;
+    }
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ring-center .pct {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--level-color, var(--gold));
+      line-height: 1;
+    }
+    .ring-center .pct-lbl {
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 0.15rem;
+    }
+
+    /* Section cards in resumen */
+    .sec-cards {
+      display: grid;
+      gap: 0.55rem;
+      margin-bottom: 1rem;
+    }
+    .sec-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .sec-card .bar-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+    .sec-card .sec-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    .sec-card .sec-name span { color: var(--muted); font-weight: 500; }
+    .bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--gold);
+      transition: width 0.4s ease;
+    }
+    .sec-icon {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 8px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* Levels legend */
+    .levels-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .levels-box h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+    .level-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.75rem;
+    }
+    .level-dot {
+      width: 0.65rem;
+      height: 0.65rem;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .level-row .range {
+      color: var(--muted);
+      min-width: 3.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .level-row .name { font-weight: 600; }
+
+    .maxim {
+      background: linear-gradient(135deg, #1a1520, #0B1220);
+      border: 1px solid var(--terra);
+      border-radius: 8px;
+      padding: 0.9rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .maxim span {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .maxim strong {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--terra);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+    }
+
+    .section-intro {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: var(--card);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+    }
+    .section-intro strong { color: var(--gold); }
+
+    .check-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 0.85rem 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.55rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .check-item.done {
+      border-color: var(--ok);
+      background: rgba(61, 122, 90, 0.12);
+    }
+    .check-item label {
+      flex: 1;
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .check-item.done label { color: var(--muted); }
+    .check-item input[type="checkbox"] {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-top: 0.1rem;
+      accent-color: var(--ok);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .item-num {
+      font-size: 0.7rem;
+      color: var(--gold);
+      font-weight: 700;
+      min-width: 1.2rem;
+    }
+
+    .vicio-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin-bottom: 0.6rem;
+    }
+    .vicio-card h3 {
+      font-size: 0.85rem;
+      color: var(--terra);
+      margin-bottom: 0.3rem;
+    }
+    .vicio-card p {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .app-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 50;
+      padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+    }
+    .btn {
+      flex: 1;
+      padding: 0.7rem 0.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:active { background: var(--gold-dim); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:active { background: var(--card); }
+
+    .install-banner {
+      display: none;
+      background: var(--gold);
+      color: var(--navy);
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+    }
+    .install-banner.show { display: block; }
+
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--ok);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (min-width: 640px) {
+      main { max-width: 640px; margin: 0 auto; width: 100%; }
+      .app-footer { max-width: 640px; left: 50%; transform: translateX(-50%); }
+      .tabs { justify-content: center; }
+      .tab { min-width: 6.5rem; font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="installBanner" class="install-banner" role="button" tabindex="0">
+    📲 Instalar app en este dispositivo
+  </div>
+
+  <header class="app-header">
+    <div class="header-row">
+      <div>
+        <h1>CHECKLIST BITÁCORA DE OBRA</h1>
+        <p>Control preventivo · Obra pública municipal</p>
+      </div>
+      <div class="progress-ring" id="globalProgress">0%</div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-panel="resumen" role="tab">Resumen</button>
+    <button class="tab" data-panel="apertura" role="tab">Apertura <span class="badge" id="badge-apertura">0/8</span></button>
+    <button class="tab" data-panel="operacion" role="tab">Operación <span class="badge" id="badge-operacion">0/10</span></button>
+    <button class="tab" data-panel="cierre" role="tab">Cierre <span class="badge" id="badge-cierre">0/7</span></button>
+    <button class="tab" data-panel="vicios" role="tab">Vicios</button>
+  </nav>
+
+  <main>
+    <!-- ===== RESUMEN (HERO) ===== -->
+    <section id="resumen" class="panel active" role="tabpanel">
+      <div class="hero" id="heroBox">
+        <div class="hero-label">Nivel de cumplimiento</div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="54" />
+            <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="54" />
+          </svg>
+          <div class="ring-center">
+            <div class="pct" id="heroPct">0<span>%</span></div>
+            <div class="pct-lbl">avance</div>
+          </div>
+        </div>
+        <div class="hero-level" id="heroLevel">—</div>
+        <div class="hero-risk" id="heroRisk">Complete los checklists para evaluar el riesgo</div>
+      </div>
+
+      <div class="sec-cards" id="secCards"></div>
+
+      <div class="levels-box">
+        <h3>Escala de cumplimiento y riesgo</h3>
+        <div class="level-row">
+          <span class="level-dot" style="background:#B91C1C"></span>
+          <span class="range">0–39%</span>
+          <span class="name" style="color:#B91C1C">Crítico</span>
+          <span style="color:var(--muted);font-size:0.7rem">— Alto riesgo de observación</span>
+        </div>
+        <div class="level-row">
+          <span class="level-dot" style="background:#D97706"></span>
+          <span class="range">40–59%</span>
+          <span class="name" style="color:#D97706">En riesgo</span>
+          <span style="color:var(--muted);font-size:0.7rem">— Brechas relevantes</span>
+        </div>
+        <div class="level-row">
+          <span class="level-dot" style="background:#C9A227"></span>
+          <span class="range">60–79%</span>
+          <span class="name" style="color:#C9A227">Aceptable</span>
+          <span style="color:var(--muted);font-size:0.7rem">— Base sólida, cerrar huecos</span>
+        </div>
+        <div class="level-row">
+          <span class="level-dot" style="background:#3D7A5A"></span>
+          <span class="range">80–100%</span>
+          <span class="name" style="color:#3D7A5A">Óptimo</span>
+          <span style="color:var(--muted);font-size:0.7rem">— Blindaje preventivo</span>
+        </div>
+      </div>
+
+      <div class="maxim">
+        <strong>Máxima operativa</strong>
+        <span>«Lo que no consta oportunamente en la bitácora, jurídicamente no ocurrió en la obra.»</span>
+      </div>
+    </section>
+
+    <!-- APERTURA -->
+    <section id="apertura" class="panel" role="tabpanel">
+      <div class="section-intro">
+        Verifique estos puntos <strong>antes o al momento</strong> de abrir la bitácora (física o electrónica).
+      </div>
+      <div id="list-apertura"></div>
+    </section>
+
+    <!-- OPERACIÓN -->
+    <section id="operacion" class="panel" role="tabpanel">
+      <div class="section-intro">
+        Aplique en cada jornada: <strong>S.T.A.R.T.</strong> = Sujeto · Tiempo · Asunto · Referencia · Trazabilidad.
+      </div>
+      <div id="list-operacion"></div>
+    </section>
+
+    <!-- CIERRE -->
+    <section id="cierre" class="panel" role="tabpanel">
+      <div class="section-intro">
+        El cierre formal es <strong>requisito previo al finiquito</strong>. Sin cierre no hay extinción válida de derechos y obligaciones.
+      </div>
+      <div id="list-cierre"></div>
+    </section>
+
+    <!-- VICIOS -->
+    <section id="vicios" class="panel" role="tabpanel">
+      <div class="section-intro">
+        Seis vicios que detonan observaciones de fiscalización. Úselo como recordatorio en supervisiones y revisiones del OIC.
+      </div>
+      <div id="list-vicios"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <button class="btn btn-ghost" id="btnReset" type="button">Reiniciar</button>
+    <button class="btn btn-primary" id="btnExport" type="button">Exportar resumen</button>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const DATA = {
+      apertura: [
+        "Designación formal del Residente / supervisor por el Ayuntamiento o dependencia",
+        "Designación formal del Superintendente por el contratista",
+        "Nota de apertura con fecha, datos de partes, personal autorizado, contrato y alcance",
+        "Medio definido (electrónico autorizado o convencional) y lugar de resguardo",
+        "Acceso efectivo de ambas partes a la bitácora",
+        "Apertura en fecha de inicio de trabajos (o desfase documentado)",
+        "Una bitácora por obra (no compartir entre contratos)",
+        "Copia de documentos de acreditación integrada al expediente"
+      ],
+      operacion: [
+        "Hechos trascendentes asentados el mismo día o dentro del plazo legal",
+        "Cada nota identifica Sujeto (emisor/receptor acreditados)",
+        "Cada nota registra Tiempo concurrente con el hecho (timestamp en electrónico)",
+        "Asunto técnico inequívoco (tramo, eje, nivel, metrado, descripción)",
+        "Referencia a planos, laboratorio, estimaciones o cláusulas del contrato",
+        "Se evita frases genéricas («se avanza según programa», «todo en orden»)",
+        "Suspensiones, reinicios y conceptos extraordinarios documentados",
+        "Instrucciones del Residente fundadas y referidas al contrato/proyecto",
+        "Contraparte ha validado o controvertido en plazo las notas relevantes",
+        "No hay acumulación de notas al final del periodo"
+      ],
+      cierre: [
+        "Todas las notas abiertas fueron respondidas o cerradas formalmente",
+        "Existe asiento de cierre que certifica terminación de trabajos",
+        "El asiento de cierre declara inexistencia de notas pendientes",
+        "El cierre es anterior al acta de finiquito",
+        "Bitácora integrada al expediente de la obra (físico y/o exportación electrónica)",
+        "Resguardo conforme a normativa de archivo aplicable",
+        "Copia disponible para OIC / ente de fiscalización si la requieren"
+      ],
+      vicios: [
+        { t: "1. Extemporaneidad", d: "Registro días o semanas después del hecho. El timestamp lo acredita. Efecto: invalidez probatoria, penas convencionales, observación en Cuenta Pública." },
+        { t: "2. Ambigüedad / frases genéricas", d: "«Se avanza según programa», «todo en orden». Efecto: no se acredita ejecución real; observaciones por pago en exceso." },
+        { t: "3. Falta de acreditación", d: "Firma de personal no facultado. Efecto: nulidad de instrucciones o acuerdos." },
+        { t: "4. Omisión de anticipos / descalces", d: "Inicio sin registro de anticipo o de diferimiento. Efecto: presunción de irregularidad en amortizaciones." },
+        { t: "5. Descalce de calidad", d: "Autorización sin reportes de laboratorio o sin referencia. Efecto: duda sobre especificaciones; posible reintegro." },
+        { t: "6. Cierre inexistente o defectuoso", d: "Finiquito con bitácora abierta o sin asiento de cierre. Efecto: vulneración al debido proceso; sanción administrativa." }
+      ]
+    };
+
+    const LEVELS = [
+      { min: 0,  max: 39,  key: "critico",    label: "Crítico",    color: "#B91C1C", risk: "Alto riesgo de observación y responsabilidad" },
+      { min: 40, max: 59,  key: "en_riesgo",  label: "En riesgo",  color: "#D97706", risk: "Brechas relevantes ante fiscalización" },
+      { min: 60, max: 79,  key: "aceptable",  label: "Aceptable",  color: "#C9A227", risk: "Base sólida; cerrar huecos pendientes" },
+      { min: 80, max: 100, key: "optimo",     label: "Óptimo",     color: "#3D7A5A", risk: "Blindaje preventivo adecuado" }
+    ];
+
+    const STORAGE_KEY = "bitacora_checklist_v1";
+    const CIRCUMFERENCE = 2 * Math.PI * 54; // ≈ 339.3
+
+    function loadState() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { apertura: {}, operacion: {}, cierre: {} };
+      } catch { return { apertura: {}, operacion: {}, cierre: {} }; }
+    }
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    let state = loadState();
+
+    function getSectionStats(sec) {
+      const items = DATA[sec];
+      const checked = state[sec] || {};
+      const done = items.filter((_, i) => checked[i]).length;
+      return { done, total: items.length, pct: items.length ? Math.round((done / items.length) * 100) : 0 };
+    }
+
+    function getGlobalStats() {
+      let done = 0, total = 0;
+      ["apertura", "operacion", "cierre"].forEach(sec => {
+        const s = getSectionStats(sec);
+        done += s.done;
+        total += s.total;
+      });
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      const level = LEVELS.find(l => pct >= l.min && pct <= l.max) || LEVELS[0];
+      return { done, total, pct, level };
+    }
+
+    function renderHero() {
+      const g = getGlobalStats();
+      const hero = document.getElementById("heroBox");
+      hero.style.setProperty("--level-color", g.level.color);
+
+      document.getElementById("heroPct").innerHTML = g.pct + "<span>%</span>";
+      document.getElementById("heroLevel").textContent = g.level.label;
+      document.getElementById("heroRisk").innerHTML = "Riesgo: <strong>" + g.level.risk + "</strong>";
+
+      const ring = document.getElementById("ringFg");
+      const offset = CIRCUMFERENCE * (1 - g.pct / 100);
+      ring.style.strokeDasharray = CIRCUMFERENCE;
+      ring.style.strokeDashoffset = offset;
+      ring.style.stroke = g.level.color;
+
+      // Section cards
+      const labels = { apertura: "Apertura", operacion: "Operación diaria", cierre: "Cierre formal" };
+      const icons = { apertura: "A", operacion: "O", cierre: "C" };
+      document.getElementById("secCards").innerHTML = ["apertura", "operacion", "cierre"].map(sec => {
+        const s = getSectionStats(sec);
+        return `<div class="sec-card">
+          <div class="sec-icon">${icons[sec]}</div>
+          <div class="bar-wrap">
+            <div class="sec-name">${labels[sec]} <span>${s.done}/${s.total}</span></div>
+            <div class="bar"><i style="width:${s.pct}%;background:${g.level.color}"></i></div>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    function renderList(section) {
+      const container = document.getElementById("list-" + section);
+      if (!container) return;
+      if (section === "vicios") {
+        container.innerHTML = DATA.vicios.map(v =>
+          `<div class="vicio-card"><h3>${v.t}</h3><p>${v.d}</p></div>`
+        ).join("");
+        return;
+      }
+      const items = DATA[section];
+      const checked = state[section] || {};
+      container.innerHTML = items.map((text, i) => {
+        const id = `${section}-${i}`;
+        const isDone = !!checked[i];
+        return `<div class="check-item ${isDone ? "done" : ""}" data-section="${section}" data-idx="${i}">
+          <span class="item-num">${i + 1}</span>
+          <input type="checkbox" id="${id}" ${isDone ? "checked" : ""} />
+          <label for="${id}">${text}</label>
+        </div>`;
+      }).join("");
+    }
+
+    function updateBadges() {
+      const g = getGlobalStats();
+      document.getElementById("globalProgress").textContent = g.pct + "%";
+      ["apertura", "operacion", "cierre"].forEach(sec => {
+        const s = getSectionStats(sec);
+        const badge = document.getElementById("badge-" + sec);
+        if (badge) badge.textContent = `${s.done}/${s.total}`;
+      });
+      renderHero();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.panel).classList.add("active");
+      });
+    });
+
+    // Checkbox handling
+    document.querySelector("main").addEventListener("change", e => {
+      if (e.target.type !== "checkbox") return;
+      const item = e.target.closest(".check-item");
+      if (!item) return;
+      const sec = item.dataset.section;
+      const idx = item.dataset.idx;
+      if (!state[sec]) state[sec] = {};
+      state[sec][idx] = e.target.checked;
+      item.classList.toggle("done", e.target.checked);
+      saveState(state);
+      updateBadges();
+    });
+
+    // Reset
+    document.getElementById("btnReset").addEventListener("click", () => {
+      if (!confirm("¿Reiniciar todo el progreso de este dispositivo?")) return;
+      state = { apertura: {}, operacion: {}, cierre: {} };
+      saveState(state);
+      ["apertura", "operacion", "cierre"].forEach(renderList);
+      updateBadges();
+      showToast("Progreso reiniciado");
+    });
+
+    // Export
+    document.getElementById("btnExport").addEventListener("click", () => {
+      const g = getGlobalStats();
+      const lines = [
+        "CHECKLIST BITÁCORA DE OBRA PÚBLICA MUNICIPAL",
+        "Resumen de avance y nivel de riesgo",
+        "",
+        `Cumplimiento global: ${g.pct}% (${g.done}/${g.total})`,
+        `Nivel: ${g.level.label}`,
+        `Riesgo: ${g.level.risk}`,
+        ""
+      ];
+      ["apertura", "operacion", "cierre"].forEach(sec => {
+        const title = { apertura: "APERTURA", operacion: "OPERACIÓN DIARIA", cierre: "CIERRE" }[sec];
+        const s = getSectionStats(sec);
+        lines.push(`--- ${title} (${s.done}/${s.total}) ---`);
+        DATA[sec].forEach((text, i) => {
+          const ok = !!(state[sec] && state[sec][i]);
+          lines.push(`${ok ? "[X]" : "[ ]"} ${i + 1}. ${text}`);
+        });
+        lines.push("");
+      });
+      lines.push("Escala: Crítico 0–39% | En riesgo 40–59% | Aceptable 60–79% | Óptimo 80–100%");
+      lines.push("");
+      lines.push("Máxima: Lo que no consta oportunamente en la bitácora, jurídicamente no ocurrió en la obra.");
+      const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "resumen_checklist_bitacora.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("Resumen exportado");
+    });
+
+    // PWA install
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById("installBanner").classList.add("show");
+    });
+    document.getElementById("installBanner").addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById("installBanner").classList.remove("show");
+      if (outcome === "accepted") showToast("App instalada");
+    });
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+
+    // Init
+    ["apertura", "operacion", "cierre", "vicios"].forEach(renderList);
+    updateBadges();
+  </script>
+</body>
+</html>

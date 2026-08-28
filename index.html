@@ -7,11 +7,12 @@
   <meta name="description" content="Checklist operativo de bitácora de obra pública municipal. Control preventivo ante fiscalización." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Bitácora Checklist" />
+  <meta name="apple-mobile-web-app-title" content="CATU Bitácora" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
-  <title>Checklist Bitácora de Obra</title>
+  <title>CATU · Checklist Bitácora de Obra</title>
   <style>
     :root {
       --navy: #0B1220;
@@ -75,7 +76,7 @@
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       position: sticky;
-      top: 58px;
+      top: 72px;
       z-index: 40;
       scrollbar-width: none;
     }
@@ -139,6 +140,13 @@
       top: 0; left: 0; right: 0;
       height: 3px;
       background: var(--level-color, var(--gold));
+    }
+    .hero-logo {
+      display: block;
+      margin: 0 auto 0.65rem;
+      height: 52px;
+      width: auto;
+      opacity: 0.95;
     }
     .hero-label {
       font-size: 0.65rem;
@@ -465,6 +473,54 @@
       .tabs { justify-content: center; }
       .tab { min-width: 6.5rem; font-size: 0.75rem; }
     }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-width: 0;
+      flex: 1;
+    }
+    .brand img {
+      height: 56px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .brand-text {
+      min-width: 0;
+    }
+    .brand-text h1 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-text p {
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-top: 0.08rem;
+    }
+    .catu-footer-brand {
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      padding: 0.85rem 0 0.35rem;
+      letter-spacing: 0.04em;
+    }
+    .catu-footer-brand strong {
+      color: var(--gold);
+      font-weight: 700;
+    }
+    @media (max-width: 380px) {
+      .brand img { height: 42px; }
+      .brand-text h1 { font-size: 0.72rem; }
+      .brand-text p { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -474,9 +530,12 @@
 
   <header class="app-header">
     <div class="header-row">
-      <div>
-        <h1>CHECKLIST BITÁCORA DE OBRA</h1>
-        <p>Control preventivo · Obra pública municipal</p>
+      <div class="brand">
+        <img src="icons/catu_header.png" alt="CATU" width="75" height="56" />
+        <div class="brand-text">
+          <h1>CHECKLIST BITÁCORA DE OBRA</h1>
+          <p>Control preventivo · Obra pública municipal</p>
+        </div>
       </div>
       <div class="progress-ring" id="globalProgress">0%</div>
     </div>
@@ -494,6 +553,7 @@
     <!-- ===== RESUMEN (HERO) ===== -->
     <section id="resumen" class="panel active" role="tabpanel">
       <div class="hero" id="heroBox">
+        <img src="icons/catu_hero.png" alt="CATU" class="hero-logo" width="110" height="82" />
         <div class="hero-label">Nivel de cumplimiento</div>
         <div class="ring-wrap">
           <svg viewBox="0 0 120 120">

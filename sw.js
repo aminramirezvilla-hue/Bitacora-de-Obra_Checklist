@@ -1,11 +1,14 @@
-const CACHE = "bitacora-checklist-v2";
+const CACHE = "bitacora-checklist-v3";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icons/apple-touch-icon.png",
+  "./icons/catu_header.png",
+  "./icons/catu_hero.png",
+  "./icons/favicon-32.png"
 ];
 
 self.addEventListener("install", event => {

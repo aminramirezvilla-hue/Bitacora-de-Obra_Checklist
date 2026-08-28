@@ -1,7 +1,7 @@
 {
-  "name": "Checklist Bitácora de Obra Pública Municipal",
-  "short_name": "Bitácora Checklist",
-  "description": "Checklist operativo de apertura, operación diaria y cierre de bitácora de obra pública. Control preventivo ante fiscalización.",
+  "name": "CATU · Checklist Bitácora de Obra Pública",
+  "short_name": "CATU Bitácora",
+  "description": "Checklist operativo de apertura, operación diaria y cierre de bitácora de obra pública municipal. Control preventivo ante fiscalización. CATU.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0B1220",

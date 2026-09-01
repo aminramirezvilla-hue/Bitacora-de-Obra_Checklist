@@ -230,6 +230,56 @@
       margin-top: 0.15rem;
     }
 
+
+    /* Datos generales de la obra */
+    .meta-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .meta-box h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.65rem;
+    }
+    .meta-grid {
+      display: grid;
+      gap: 0.55rem;
+    }
+    .meta-field label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .meta-field input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.85rem;
+      padding: 0.55rem 0.65rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .meta-field input:focus {
+      border-color: var(--gold);
+    }
+    .meta-field input::placeholder {
+      color: #5a6578;
+    }
+    @media (min-width: 480px) {
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .meta-field.full { grid-column: 1 / -1; }
+    }
+
     /* Section cards in resumen */
     .sec-cards {
       display: grid;
@@ -534,7 +584,7 @@
         <img src="icons/catu_header.png" alt="CATU" width="75" height="56" />
         <div class="brand-text">
           <h1>CHECKLIST BITÁCORA DE OBRA</h1>
-          <p>Control preventivo · Obra pública municipal</p>
+          <p id="headerSub">Control preventivo · Obra pública municipal</p>
         </div>
       </div>
       <div class="progress-ring" id="globalProgress">0%</div>
@@ -567,6 +617,37 @@
         </div>
         <div class="hero-level" id="heroLevel">—</div>
         <div class="hero-risk" id="heroRisk">Complete los checklists para evaluar el riesgo</div>
+      </div>
+
+
+      <div class="meta-box">
+        <h3>Datos generales de la obra</h3>
+        <div class="meta-grid">
+          <div class="meta-field full">
+            <label for="meta-obra">Nombre de la obra</label>
+            <input type="text" id="meta-obra" data-meta="obra" placeholder="Ej. Rehabilitación de red de agua potable, colonia Centro" autocomplete="off" />
+          </div>
+          <div class="meta-field">
+            <label for="meta-contrato">Número de contrato</label>
+            <input type="text" id="meta-contrato" data-meta="contrato" placeholder="Ej. LO-XXX-2026-001" autocomplete="off" />
+          </div>
+          <div class="meta-field">
+            <label for="meta-supervisor">Supervisor</label>
+            <input type="text" id="meta-supervisor" data-meta="supervisor" placeholder="Nombre completo" autocomplete="name" />
+          </div>
+          <div class="meta-field">
+            <label for="meta-residente">Residente de obra</label>
+            <input type="text" id="meta-residente" data-meta="residente" placeholder="Nombre completo" autocomplete="name" />
+          </div>
+          <div class="meta-field">
+            <label for="meta-superintendente">Superintendente</label>
+            <input type="text" id="meta-superintendente" data-meta="superintendente" placeholder="Nombre completo" autocomplete="name" />
+          </div>
+          <div class="meta-field">
+            <label for="meta-auditor">Auditor OIC</label>
+            <input type="text" id="meta-auditor" data-meta="auditor" placeholder="Nombre completo" autocomplete="name" />
+          </div>
+        </div>
       </div>
 
       <div class="sec-cards" id="secCards"></div>
@@ -695,19 +776,64 @@
       { min: 80, max: 100, key: "optimo",     label: "Óptimo",     color: "#3D7A5A", risk: "Blindaje preventivo adecuado" }
     ];
 
-    const STORAGE_KEY = "bitacora_checklist_v1";
+    const STORAGE_KEY = "bitacora_checklist_v4";
     const CIRCUMFERENCE = 2 * Math.PI * 54; // ≈ 339.3
+
+    const EMPTY_META = {
+      obra: "",
+      contrato: "",
+      supervisor: "",
+      residente: "",
+      superintendente: "",
+      auditor: ""
+    };
+
+    function defaultState() {
+      return { meta: { ...EMPTY_META }, apertura: {}, operacion: {}, cierre: {} };
+    }
 
     function loadState() {
       try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { apertura: {}, operacion: {}, cierre: {} };
-      } catch { return { apertura: {}, operacion: {}, cierre: {} }; }
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!raw) return defaultState();
+        // Migrar versiones previas sin meta
+        if (!raw.meta) raw.meta = { ...EMPTY_META };
+        ["obra","contrato","supervisor","residente","superintendente","auditor"].forEach(k => {
+          if (typeof raw.meta[k] !== "string") raw.meta[k] = "";
+        });
+        ["apertura","operacion","cierre"].forEach(s => {
+          if (!raw[s] || typeof raw[s] !== "object") raw[s] = {};
+        });
+        return raw;
+      } catch { return defaultState(); }
     }
     function saveState(state) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
     let state = loadState();
+
+    function fillMetaForm() {
+      const m = state.meta || EMPTY_META;
+      document.querySelectorAll("[data-meta]").forEach(inp => {
+        inp.value = m[inp.dataset.meta] || "";
+      });
+      updateHeaderMeta();
+    }
+
+    function updateHeaderMeta() {
+      const m = state.meta || {};
+      const sub = document.getElementById("headerSub");
+      if (!sub) return;
+      if (m.obra || m.contrato) {
+        const parts = [];
+        if (m.obra) parts.push(m.obra);
+        if (m.contrato) parts.push("Contrato " + m.contrato);
+        sub.textContent = parts.join(" · ");
+      } else {
+        sub.textContent = "Control preventivo · Obra pública municipal";
+      }
+    }
 
     function getSectionStats(sec) {
       const items = DATA[sec];
@@ -798,6 +924,19 @@
       setTimeout(() => t.classList.remove("show"), 2200);
     }
 
+
+    // Datos generales (meta)
+    document.querySelectorAll("[data-meta]").forEach(inp => {
+      const persist = () => {
+        if (!state.meta) state.meta = { ...EMPTY_META };
+        state.meta[inp.dataset.meta] = inp.value.trim();
+        saveState(state);
+        updateHeaderMeta();
+      };
+      inp.addEventListener("input", persist);
+      inp.addEventListener("change", persist);
+    });
+
     // Tabs
     document.querySelectorAll(".tab").forEach(tab => {
       tab.addEventListener("click", () => {
@@ -825,19 +964,29 @@
     // Reset
     document.getElementById("btnReset").addEventListener("click", () => {
       if (!confirm("¿Reiniciar todo el progreso de este dispositivo?")) return;
-      state = { apertura: {}, operacion: {}, cierre: {} };
+      const keepMeta = state.meta ? { ...state.meta } : { ...EMPTY_META };
+      state = { meta: keepMeta, apertura: {}, operacion: {}, cierre: {} };
       saveState(state);
       ["apertura", "operacion", "cierre"].forEach(renderList);
       updateBadges();
-      showToast("Progreso reiniciado");
+      showToast("Checklist reiniciado (datos de obra conservados)");
     });
 
     // Export
     document.getElementById("btnExport").addEventListener("click", () => {
       const g = getGlobalStats();
+      const m = state.meta || EMPTY_META;
       const lines = [
         "CHECKLIST BITÁCORA DE OBRA PÚBLICA MUNICIPAL",
         "Resumen de avance y nivel de riesgo",
+        "",
+        "--- DATOS GENERALES ---",
+        `Obra: ${m.obra || "(sin registrar)"}`,
+        `Contrato: ${m.contrato || "(sin registrar)"}`,
+        `Supervisor: ${m.supervisor || "(sin registrar)"}`,
+        `Residente: ${m.residente || "(sin registrar)"}`,
+        `Superintendente: ${m.superintendente || "(sin registrar)"}`,
+        `Auditor OIC: ${m.auditor || "(sin registrar)"}`,
         "",
         `Cumplimiento global: ${g.pct}% (${g.done}/${g.total})`,
         `Nivel: ${g.level.label}`,
@@ -860,7 +1009,8 @@
       const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "resumen_checklist_bitacora.txt";
+      const slug = (m.contrato || m.obra || "bitacora").toString().slice(0, 40).replace(/[^\w\-áéíóúñÁÉÍÓÚÑ]+/gi, "_");
+      a.download = `resumen_checklist_${slug}.txt`;
       a.click();
       URL.revokeObjectURL(a.href);
       showToast("Resumen exportado");

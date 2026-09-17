@@ -11,8 +11,9 @@
     height: auto !important;
   }
   body { display: block !important; }
-  .install-banner, .app-header, .tabs, .app-footer, .toast,
-  .hero-logo, .ring-wrap { display: none !important; }
+  .app-header, .tabs, .app-footer, .toast, .hero-logo {
+    display: none !important;
+  }
   main {
     overflow: visible !important;
     padding: 0 !important;
@@ -40,6 +41,7 @@
     text-transform: uppercase;
     color: #7A5C00 !important;
     margin: 14px 0 6px;
+    break-after: avoid;
   }
   .hero, .meta-box, .sec-card, .levels-box, .maxim, .section-intro,
   .check-item, .vicio-card {
@@ -62,6 +64,13 @@
     border: 1px solid #94A3B8 !important;
   }
   .check-item.done { background: #ECFDF3 !important; border-color: #166534 !important; }
+  .check-item input[type=checkbox] {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+  }
   .print-foot {
     display: block !important;
     margin-top: 16px;

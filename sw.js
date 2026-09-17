@@ -1,9 +1,10 @@
-const CACHE = "bitacora-checklist-v6";
+const CACHE = "bitacora-checklist-v7";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./css/print.css",
+  "./js/checklist.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png",
@@ -11,21 +12,14 @@ const ASSETS = [
   "./icons/catu_hero.png",
   "./icons/favicon-32.png"
 ];
-
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
-
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())
   );
 });
-
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(cached => {
